@@ -1,2571 +1,517 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Business Calculator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Numeral.js for better currency formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
     <style>
-        /* Base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f0f4f8;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        /* Calculator container */
-        .calculator-container {
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            overflow: hidden;
-        }
-
-        /* Header */
-        .calculator-header {
-            background-color: #7c3aed;
-            color: white;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .calculator-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-            z-index: 1;
-        }
-
-        .calculator-header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .calculator-header p {
-            font-size: 1rem;
-            opacity: 0.9;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Tab categories */
-        .tab-categories {
-            display: flex;
-            background-color: #8b5cf6;
-            overflow-x: auto;
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            scrollbar-width: none; /* Firefox */
-        }
-
-        .tab-categories::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Edge */
-        }
-
-        .category-button {
-            padding: 15px 20px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            color: white;
-            white-space: nowrap;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .category-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .category-button.active {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .category-button.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: white;
-        }
-
-        /* Tab navigation */
-        .tab-navigation {
-            display: flex;
-            overflow-x: auto;
-            background-color: #f1f5f9;
-            border-bottom: 1px solid #e2e8f0;
-            position: sticky;
-            top: 56px;
-            z-index: 10;
-            padding: 0 10px;
-            scrollbar-width: none; /* Firefox */
-        }
-
-        .tab-navigation::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Edge */
-        }
-
-        .tab-button {
-            padding: 15px 20px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #64748b;
-            white-space: nowrap;
-            transition: all 0.3s;
-            position: relative;
-            border-radius: 10px 10px 0 0;
-            margin-top: 5px;
-        }
-
-        .tab-button:hover {
-            background-color: #e2e8f0;
-            color: #7c3aed;
-        }
-
-        .tab-button.active {
-            color: #7c3aed;
-            background-color: white;
-        }
-
-        .tab-button.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: #7c3aed;
-        }
-
-        .tab-navigation-container {
-            display: none;
-        }
-
-        .tab-navigation-container.active {
-            display: block;
-        }
-
-        /* Tab content */
-        .tab-content {
-            display: none;
-            padding: 30px;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
-
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        /* Calculator form */
-        .calculator-form {
-            margin-bottom: 20px;
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
         }
-
-        .form-group {
-            margin-bottom: 25px;
+        
+        /* Custom select styles */
+        .custom-select {
             position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #334155;
-            font-size: 1.05rem;
-        }
-
-        .form-explanation {
-            display: block;
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-top: 4px;
-            font-weight: normal;
-        }
-
-        .form-group input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s;
-            background-color: #f8fafc;
         }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
-            background-color: white;
-        }
-
-        .form-group select {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            background-color: #f8fafc;
-            transition: all 0.3s;
+        
+        .custom-select select {
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            background-size: 16px;
-        }
-
-        .form-group select:focus {
-            outline: none;
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
-            background-color: white;
-        }
-
-        /* Result section */
-        .result-section {
-            background-color: #f1f5f9;
-            padding: 25px;
-            border-radius: 12px;
-            margin-top: 30px;
-            text-align: center;
-            border: 2px solid #e2e8f0;
-            transition: all 0.3s ease;
-        }
-
-        .result-section.has-result {
-            background-color: #f5f3ff;
-            border-color: #c4b5fd;
-        }
-
-        .result-title {
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-        }
-
-        .result-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #7c3aed;
-            transition: all 0.3s ease;
-        }
-
-        .result-details {
-            margin-top: 15px;
-            font-size: 0.95rem;
-            color: #64748b;
-            display: none;
-        }
-
-        .result-section.has-result .result-details {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        /* Tab description */
-        .tab-description {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .tab-description h2 {
-            font-size: 1.5rem;
-            color: #7c3aed;
-            margin-bottom: 12px;
-        }
-
-        .tab-description p {
-            color: #64748b;
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-
-        /* Simple formula display */
-        .simple-formula {
-            background-color: #f8fafc;
-            border-left: 4px solid #7c3aed;
-            padding: 15px;
-            margin-top: 15px;
-            margin-bottom: 25px;
-            font-size: 1rem;
-            color: #334155;
-            border-radius: 0 8px 8px 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .simple-formula::before {
-            content: '📊';
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.5rem;
-            opacity: 0.2;
-        }
-
-        /* Input with symbol */
-        .input-with-symbol {
-            position: relative;
-        }
-
-        .input-with-symbol input {
-            padding-left: 40px;
-        }
-
-        .input-symbol {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        /* Form grid for side-by-side inputs */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        /* Calculate button */
-        .calculate-button {
-            background-color: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 25px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: block;
+            -webkit-appearance: none;
+            -moz-appearance: none;
             width: 100%;
-            margin-top: 10px;
-        }
-
-        .calculate-button:hover {
-            background-color: #6d28d9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
-        }
-
-        .calculate-button:active {
-            transform: translateY(0);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .calculator-container {
-                border-radius: 15px;
-            }
-            
-            .calculator-header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .tab-button, .category-button {
-                padding: 12px 15px;
-                font-size: 0.85rem;
-            }
-            
-            .tab-content {
-                padding: 20px;
-            }
-
-            .result-value {
-                font-size: 1.5rem;
-            }
-
-            .tab-navigation {
-                top: 50px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* New styles for advanced features */
-        .advanced-feature {
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s;
-        }
-
-        .advanced-feature:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            border-color: #d1d5db;
-        }
-
-        .feature-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .feature-icon {
-            background-color: #e9d5ff;
-            color: #7c3aed;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 1.2rem;
-        }
-
-        .feature-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #334155;
-        }
-
-        /* Result card with animation */
-        .result-card {
-            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
-            text-align: center;
-            transform: scale(0.95);
-            opacity: 0;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: none;
-        }
-
-        .result-card.show {
-            transform: scale(1);
-            opacity: 1;
-            display: block;
-        }
-
-        .result-card-title {
-            font-size: 1rem;
-            color: #6b7280;
-            margin-bottom: 10px;
-        }
-
-        .result-card-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #7c3aed;
-            margin-bottom: 10px;
-        }
-
-        .result-card-subtitle {
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-
-        /* Toggle switch */
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .toggle-label {
-            margin-right: 10px;
-            font-weight: 600;
-            color: #334155;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #e2e8f0;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
+            padding: 0.75rem 3rem 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
             background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #374151;
         }
-
-        input:checked + .toggle-slider {
-            background-color: #7c3aed;
+        
+        .custom-select select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
         }
-
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
+        
+        .custom-select::after {
+            content: "\f078";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #6b7280;
+            transition: all 0.3s ease;
         }
-
-        .toggle-text {
-            margin-left: 10px;
-            font-size: 0.9rem;
-            color: #64748b;
+        
+        .custom-select:hover::after {
+            color: #4b5563;
+        }
+        
+        /* Custom option styling (limited browser support) */
+        select option {
+            padding: 0.5rem 1rem;
+            background-color: white;
+            color: #374151;
+        }
+        
+        select option:hover {
+            background-color: #f3e8ff !important;
+        }
+        
+        select option:checked {
+            background-color: #8b5cf6;
+            color: white;
+        }
+        
+        /* For browsers that support :focus-visible */
+        select:focus-visible {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
         }
     </style>
 </head>
-<body>
-    <div class="calculator-container">
-        <div class="calculator-header">
-            <h1>Advanced Business Calculator</h1>
-            <p>Complete financial tools for business decisions</p>
-        </div>
-        
-        <!-- Category Navigation -->
-        <div class="tab-categories">
-            <button class="category-button active" data-category="pricing">Pricing</button>
-            <button class="category-button" data-category="profit">Profit</button>
-            <button class="category-button" data-category="investment">Investment</button>
-            <button class="category-button" data-category="finance">Finance</button>
-            <button class="category-button" data-category="tax">Tax</button>
-        </div>
-        
-        <!-- Pricing Category Tabs -->
-        <div class="tab-navigation-container active" id="pricing-tabs">
-            <div class="tab-navigation">
-                <button class="tab-button active" data-tab="markup">Price Setter</button>
-                <button class="tab-button" data-tab="discount">Discount</button>
-                <button class="tab-button" data-tab="margin-to-markup">Margin to Markup</button>
-                <button class="tab-button" data-tab="markup-to-margin">Markup to Margin</button>
-                <button class="tab-button" data-tab="price-increase">Price Increase</button>
-                <button class="tab-button" data-tab="price-decrease">Price Decrease</button>
+
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-purple-600 to-purple-500 text-white p-6 relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-transparent"></div>
+                <h1 class="text-2xl font-bold relative z-10">Advanced Business Calculator</h1>
+                <p class="text-purple-100 relative z-10">Complete financial tools for business decisions</p>
             </div>
-        </div>
-        
-        <!-- Profit Category Tabs -->
-        <div class="tab-navigation-container" id="profit-tabs">
-            <div class="tab-navigation">
-                <button class="tab-button" data-tab="profit-margin">Profit %</button>
-                <button class="tab-button" data-tab="profit-amount">Profit Amount</button>
-                <button class="tab-button" data-tab="profit-target">Target Profit</button>
-                <button class="tab-button" data-tab="break-even">Break-Even</button>
-                <button class="tab-button" data-tab="profit-to-percent">Amount to %</button>
-                <button class="tab-button" data-tab="percent-to-profit">% to Amount</button>
-                <button class="tab-button" data-tab="profit-loss-calculator">Profit/Loss</button>
-                <button class="tab-button" data-tab="profit-from-cost-sale">Profit from Cost/Sale</button>
-                <button class="tab-button" data-tab="percent-from-cost-sale">% from Cost/Sale</button>
-                <button class="tab-button" data-tab="profit-from-purchase-percent">Profit from Purchase/%</button>
-            </div>
-        </div>
-        
-        <!-- Investment Category Tabs -->
-        <div class="tab-navigation-container" id="investment-tabs">
-            <div class="tab-navigation">
-                <button class="tab-button" data-tab="roi">ROI Calculator</button>
-                <button class="tab-button" data-tab="investment-percentage">Investment %</button>
-                <button class="tab-button" data-tab="percentage-amount">% to Amount</button>
-                <button class="tab-button" data-tab="investment-profit">Profit by %</button>
-                <button class="tab-button" data-tab="investment-from-percent-profit">Investment from % & Profit</button>
-                <button class="tab-button" data-tab="percent-from-investment-profit">% from Investment & Profit</button>
-                <button class="tab-button" data-tab="profit-from-investment-percent">Profit from Investment & %</button>
-            </div>
-        </div>
-        
-        <!-- Finance Category Tabs -->
-        <div class="tab-navigation-container" id="finance-tabs">
-            <div class="tab-navigation">
-                <button class="tab-button" data-tab="loan">Loan Payment</button>
-                <button class="tab-button" data-tab="compound-interest">Savings Growth</button>
-            </div>
-        </div>
-        
-        <!-- Tax Category Tabs -->
-        <div class="tab-navigation-container" id="tax-tabs">
-            <div class="tab-navigation">
-                <button class="tab-button" data-tab="sales-tax">Sales Tax</button>
-            </div>
-        </div>
-        
-        <!-- Markup Calculator (Price Setter) -->
-        <div class="tab-content active" id="markup">
-            <div class="tab-description">
-                <h2>Price Setter Calculator</h2>
-                <p>Find out how much to charge for your product based on what it costs you.</p>
-                <div class="simple-formula">
-                    Selling Price = Cost + (Cost × Markup % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="mu-cost">
-                        Your Cost ($)
-                        <span class="form-explanation">(What you pay for the product)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="mu-cost" placeholder="Enter what the product costs you" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="mu-percentage">
-                        Markup %
-                        <span class="form-explanation">(How much extra to add as a percentage)</span>
-                    </label>
-                    <input type="number" id="mu-percentage" placeholder="Enter your markup percentage" step="0.1" min="0">
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Price You Should Charge:</div>
-                <div class="result-value" id="mu-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Discount Calculator -->
-        <div class="tab-content" id="discount">
-            <div class="tab-description">
-                <h2>Discount Calculator</h2>
-                <p>Find out the final price after applying a discount.</p>
-                <div class="simple-formula">
-                    Sale Price = Original Price - (Original Price × Discount % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="dc-original">
-                        Original Price ($)
-                        <span class="form-explanation">(Price before the discount)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="dc-original" placeholder="Enter the original price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="dc-percentage">
-                        Discount %
-                        <span class="form-explanation">(How much to take off as a percentage)</span>
-                    </label>
-                    <input type="number" id="dc-percentage" placeholder="Enter the discount percentage" step="0.1" min="0" max="100">
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Final Sale Price:</div>
-                <div class="result-value" id="dc-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Margin to Markup Calculator -->
-        <div class="tab-content" id="margin-to-markup">
-            <div class="tab-description">
-                <h2>Margin to Markup Calculator</h2>
-                <p>Convert a profit margin percentage to a markup percentage.</p>
-                <div class="simple-formula">
-                    Markup % = Margin % ÷ (100 - Margin %) × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="mtm-margin">
-                        Profit Margin %
-                        <span class="form-explanation">(Profit as a percentage of selling price)</span>
-                    </label>
-                    <input type="number" id="mtm-margin" placeholder="Enter profit margin percentage" step="0.1" min="0" max="99.9">
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Equivalent Markup Percentage:</div>
-                <div class="result-value" id="mtm-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Markup to Margin Calculator -->
-        <div class="tab-content" id="markup-to-margin">
-            <div class="tab-description">
-                <h2>Markup to Margin Calculator</h2>
-                <p>Convert a markup percentage to a profit margin percentage.</p>
-                <div class="simple-formula">
-                    Margin % = Markup % ÷ (100 + Markup %) × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="mtm-markup">
-                        Markup %
-                        <span class="form-explanation">(Extra amount added to cost as a percentage)</span>
-                    </label>
-                    <input type="number" id="mtm-markup" placeholder="Enter markup percentage" step="0.1" min="0">
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Equivalent Profit Margin:</div>
-                <div class="result-value" id="mtm-margin-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Price Increase Calculator -->
-        <div class="tab-content" id="price-increase">
-            <div class="tab-description">
-                <h2>Price Increase Calculator</h2>
-                <p>Calculate the new price after a percentage increase.</p>
-                <div class="simple-formula">
-                    New Price = Original Price + (Original Price × Increase % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pi-original">
-                        Original Price ($)
-                        <span class="form-explanation">(Current price before increase)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pi-original" placeholder="Enter the original price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pi-percentage">
-                        Increase %
-                        <span class="form-explanation">(Percentage to increase the price by)</span>
-                    </label>
-                    <input type="number" id="pi-percentage" placeholder="Enter increase percentage" step="0.1" min="0">
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">New Price After Increase:</div>
-                <div class="result-value" id="pi-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Price Decrease Calculator -->
-        <div class="tab-content" id="price-decrease">
-            <div class="tab-description">
-                <h2>Price Decrease Calculator</h2>
-                <p>Calculate the new price after a percentage decrease.</p>
-                <div class="simple-formula">
-                    New Price = Original Price - (Original Price × Decrease % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pd-original">
-                        Original Price ($)
-                        <span class="form-explanation">(Current price before decrease)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pd-original" placeholder="Enter the original price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pd-percentage">
-                        Decrease %
-                        <span class="form-explanation">(Percentage to decrease the price by)</span>
-                    </label>
-                    <input type="number" id="pd-percentage" placeholder="Enter decrease percentage" step="0.1" min="0" max="100">
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">New Price After Decrease:</div>
-                <div class="result-value" id="pd-result">-</div>
-            </div>
-        </div>
-        
-        <!-- PROFIT CALCULATORS -->
-        
-        <!-- Profit Margin Calculator -->
-        <div class="tab-content" id="profit-margin">
-            <div class="tab-description">
-                <h2>Profit Percentage Calculator</h2>
-                <p>Find out what percentage of your sales is actual profit.</p>
-                <div class="simple-formula">
-                    Profit % = (Money you made - Money you spent) ÷ Money you made × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pm-revenue">
-                        Total Sales ($)
-                        <span class="form-explanation">(Total money customers paid you)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pm-revenue" placeholder="Enter your total sales" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pm-cost">
-                        Total Costs ($)
-                        <span class="form-explanation">(Money you spent to make/provide your product/service)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pm-cost" placeholder="Enter your total costs" step="0.01" min="0">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Profit Percentage:</div>
-                <div class="result-value" id="pm-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Profit Amount Calculator -->
-        <div class="tab-content" id="profit-amount">
-            <div class="tab-description">
-                <h2>Profit Amount Calculator</h2>
-                <p>Calculate how much profit you'll make based on revenue and costs.</p>
-                <div class="simple-formula">
-                    Profit = Total Sales - Total Costs
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pa-revenue">
-                        Total Sales ($)
-                        <span class="form-explanation">(Total money customers paid you)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pa-revenue" placeholder="Enter your total sales" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pa-cost">
-                        Total Costs ($)
-                        <span class="form-explanation">(Money you spent to make/provide your product/service)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pa-cost" placeholder="Enter your total costs" step="0.01" min="0">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Profit Amount:</div>
-                <div class="result-value" id="pa-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Target Profit Calculator -->
-        <div class="tab-content" id="profit-target">
-            <div class="tab-description">
-                <h2>Target Profit Calculator</h2>
-                <p>Calculate how much you need to sell to reach a target profit.</p>
-                <div class="simple-formula">
-                    Required Sales = (Fixed Costs + Target Profit) ÷ Contribution Margin Ratio
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pt-fixed">
-                        Fixed Costs ($)
-                        <span class="form-explanation">(Costs that don't change with sales volume)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pt-fixed" placeholder="Enter your fixed costs" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pt-target">
-                        Target Profit ($)
-                        <span class="form-explanation">(How much profit you want to make)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pt-target" placeholder="Enter your target profit" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pt-margin">
-                        Contribution Margin Ratio
-                        <span class="form-explanation">(Percentage of each sale that contributes to fixed costs and profit)</span>
-                    </label>
-                    <input type="number" id="pt-margin" placeholder="Enter contribution margin ratio (0-100)" step="0.1" min="0" max="100">
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Required Sales to Reach Target Profit:</div>
-                <div class="result-value" id="pt-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Break-Even Analysis -->
-        <div class="tab-content" id="break-even">
-            <div class="tab-description">
-                <h2>Break-Even Calculator</h2>
-                <p>Find out how many items you need to sell to cover your costs.</p>
-                <div class="simple-formula">
-                    Break-Even Point = Fixed Costs ÷ (Price - Cost Per Item)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="be-fixed">
-                        Fixed Costs ($)
-                        <span class="form-explanation">(Costs that don't change, like rent or equipment)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="be-fixed" placeholder="Enter your fixed costs" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="be-price">
-                        Selling Price Per Item ($)
-                        <span class="form-explanation">(How much you sell each item for)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="be-price" placeholder="Enter your selling price per item" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="be-variable">
-                        Cost Per Item ($)
-                        <span class="form-explanation">(How much each item costs you to make/buy)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="be-variable" placeholder="Enter your cost per item" step="0.01" min="0">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Items You Need to Sell to Break Even:</div>
-                <div class="result-value" id="be-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Profit Amount to Percentage Calculator -->
-        <div class="tab-content" id="profit-to-percent">
-            <div class="tab-description">
-                <h2>Profit Amount to Percentage Calculator</h2>
-                <p>Convert a profit amount to a percentage of sales.</p>
-                <div class="simple-formula">
-                    Profit % = (Profit Amount ÷ Sales Amount) × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="ptp-profit">
-                        Profit Amount ($)
-                        <span class="form-explanation">(How much profit you made in dollars)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="ptp-profit" placeholder="Enter your profit amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ptp-sales">
-                        Sales Amount ($)
-                        <span class="form-explanation">(Total sales revenue)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="ptp-sales" placeholder="Enter your total sales" step="0.01" min="0">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Profit as Percentage of Sales:</div>
-                <div class="result-value" id="ptp-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Profit Percentage to Amount Calculator -->
-        <div class="tab-content" id="percent-to-profit">
-            <div class="tab-description">
-                <h2>Profit Percentage to Amount Calculator</h2>
-                <p>Calculate how much profit you'll make based on a target percentage.</p>
-                <div class="simple-formula">
-                    Profit Amount = Sales Amount × (Profit % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="ptp-percent">
-                        Target Profit Percentage (%)
-                        <span class="form-explanation">(What percentage of sales you want as profit)</span>
-                    </label>
-                    <input type="number" id="ptp-percent" placeholder="Enter your target profit percentage" step="0.1" min="0" max="100">
-                </div>
-                
-                <div class="form-group">
-                    <label for="ptp-total">
-                        Sales Amount ($)
-                        <span class="form-explanation">(Expected total sales revenue)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="ptp-total" placeholder="Enter expected sales amount" step="0.01" min="0">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Expected Profit Amount:</div>
-                <div class="result-value" id="ptp-amount-result">-</div>
-            </div>
-        </div>
-        
-        <!-- Profit/Loss Calculator -->
-        <div class="tab-content" id="profit-loss-calculator">
-            <div class="tab-description">
-                <h2>Profit or Loss Calculator</h2>
-                <p>Determine if your business is making a profit or loss and by how much.</p>
-                <div class="simple-formula">
-                    Profit/Loss = Revenue - Expenses
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pl-revenue">
-                        Total Revenue ($)
-                        <span class="form-explanation">(All money coming into your business)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pl-revenue" placeholder="Enter your total revenue" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pl-expenses">
-                        Total Expenses ($)
-                        <span class="form-explanation">(All costs and expenses for your business)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pl-expenses" placeholder="Enter your total expenses" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <button class="calculate-button" id="pl-calculate">Calculate Profit/Loss</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Business is:</div>
-                <div class="result-value" id="pl-result">-</div>
-                <div class="result-details" id="pl-details"></div>
-            </div>
-        </div>
-        
-        <!-- NEW: Get Profit From Cost And Sale -->
-        <div class="tab-content" id="profit-from-cost-sale">
-            <div class="tab-description">
-                <h2>Profit from Cost and Sale Calculator</h2>
-                <p>Calculate your profit amount based on cost price and selling price.</p>
-                <div class="simple-formula">
-                    Profit = Selling Price - Cost Price
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pfcs-cost">
-                        Cost Price ($)
-                        <span class="form-explanation">(How much you paid for the item)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfcs-cost" placeholder="Enter the cost price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pfcs-sale">
-                        Selling Price ($)
-                        <span class="form-explanation">(How much you sold the item for)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfcs-sale" placeholder="Enter the selling price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <button class="calculate-button" id="pfcs-calculate">Calculate Profit</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Profit/Loss:</div>
-                <div class="result-value" id="pfcs-result">-</div>
-                <div class="result-details" id="pfcs-details"></div>
-            </div>
-        </div>
-        
-        <!-- NEW: Get Percentage From Cost And Sale -->
-        <div class="tab-content" id="percent-from-cost-sale">
-            <div class="tab-description">
-                <h2>Percentage from Cost and Sale Calculator</h2>
-                <p>Calculate the profit percentage based on cost price and selling price.</p>
-                <div class="simple-formula">
-                    Profit % = ((Selling Price - Cost Price) ÷ Cost Price) × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pfcs-percent-cost">
-                        Cost Price ($)
-                        <span class="form-explanation">(How much you paid for the item)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfcs-percent-cost" placeholder="Enter the cost price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pfcs-percent-sale">
-                        Selling Price ($)
-                        <span class="form-explanation">(How much you sold the item for)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfcs-percent-sale" placeholder="Enter the selling price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <button class="calculate-button" id="pfcs-percent-calculate">Calculate Percentage</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Profit/Loss Percentage:</div>
-                <div class="result-value" id="pfcs-percent-result">-</div>
-                <div class="result-details" id="pfcs-percent-details"></div>
-            </div>
-        </div>
-        
-        <!-- NEW: Get Profit From Purchase And Sale % -->
-        <div class="tab-content" id="profit-from-purchase-percent">
-            <div class="tab-description">
-                <h2>Profit from Purchase and Sale % Calculator</h2>
-                <p>Calculate your profit based on purchase price and sale percentage.</p>
-                <div class="simple-formula">
-                    Profit = Purchase Price × (Sale % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pfpp-purchase">
-                        Purchase Price ($)
-                        <span class="form-explanation">(How much you paid for the item)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfpp-purchase" placeholder="Enter the purchase price" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pfpp-percent">
-                        Sale Percentage (%)
-                        <span class="form-explanation">(Percentage profit on the sale)</span>
-                    </label>
-                    <input type="number" id="pfpp-percent" placeholder="Enter the sale percentage" step="0.1" min="-100">
-                </div>
-                
-                <button class="calculate-button" id="pfpp-calculate">Calculate Profit</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Profit Amount:</div>
-                <div class="result-value" id="pfpp-result">-</div>
-                <div class="result-details" id="pfpp-details"></div>
-            </div>
-        </div>
-        
-        <!-- INVESTMENT CALCULATORS -->
-        
-        <!-- ROI Calculator -->
-        <div class="tab-content" id="roi">
-            <div class="tab-description">
-                <h2>Return on Investment (ROI) Calculator</h2>
-                <p>Find out how much your investment has grown as a percentage.</p>
-                <div class="simple-formula">
-                    ROI % = (Return - Investment) ÷ Investment × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="roi-cost">
-                        Initial Investment ($)
-                        <span class="form-explanation">(How much money you invested)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="roi-cost" placeholder="Enter how much you invested" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="roi-gain">
-                        Final Value ($)
-                        <span class="form-explanation">(Current value of your investment)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="roi-gain" placeholder="Enter current value" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="toggle-container">
-                    <span class="toggle-label">Time Period:</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="roi-time-toggle">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span class="toggle-text" id="roi-time-text">Include time period</span>
-                </div>
-                
-                <div class="form-group" id="roi-time-group" style="display: none;">
-                    <label for="roi-time">
-                        Investment Period (Years)
-                        <span class="form-explanation">(How long you've held the investment)</span>
-                    </label>
-                    <input type="number" id="roi-time" placeholder="Enter number of years" step="0.1" min="0.1">
-                </div>
-                
-                <button class="calculate-button" id="roi-calculate">Calculate ROI</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Return on Investment:</div>
-                <div class="result-value" id="roi-result">-</div>
-                <div class="result-details" id="roi-details"></div>
-            </div>
-        </div>
-        
-        <!-- Investment Percentage Calculator -->
-        <div class="tab-content" id="investment-percentage">
-            <div class="tab-description">
-                <h2>Investment Percentage Calculator</h2>
-                <p>Calculate what percentage of total profit came from your investment.</p>
-                <div class="simple-formula">
-                    Investment % = (Your Investment ÷ Total Investment) × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="ip-your">
-                        Your Investment ($)
-                        <span class="form-explanation">(How much you personally invested)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="ip-your" placeholder="Enter your investment amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ip-total">
-                        Total Investment ($)
-                        <span class="form-explanation">(Total amount invested by all parties)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="ip-total" placeholder="Enter total investment amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <button class="calculate-button" id="ip-calculate">Calculate Percentage</button>
-            </div>
-            
-            <div class="result-card" id="ip-result-card">
-                <div class="result-card-title">Your Investment Percentage</div>
-                <div class="result-card-value" id="ip-result">-</div>
-                <div class="result-card-subtitle" id="ip-subtitle"></div>
-            </div>
-        </div>
-        
-        <!-- Percentage to Amount Calculator -->
-        <div class="tab-content" id="percentage-amount">
-            <div class="tab-description">
-                <h2>Percentage to Amount Calculator</h2>
-                <p>Calculate how much money your percentage of investment is worth.</p>
-                <div class="simple-formula">
-                    Your Amount = Total Investment × (Your Percentage ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pa-percentage">
-                        Your Percentage (%)
-                        <span class="form-explanation">(Your ownership percentage)</span>
-                    </label>
-                    <input type="number" id="pa-percentage" placeholder="Enter your percentage" step="0.01" min="0" max="100">
-                </div>
-                
-                <div class="form-group">
-                    <label for="pa-total">
-                        Total Investment Value ($)
-                        <span class="form-explanation">(Total value of the investment)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pa-total" placeholder="Enter total investment value" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <button class="calculate-button" id="pa-calculate">Calculate Your Amount</button>
-            </div>
-            
-            <div class="result-card" id="pa-result-card">
-                <div class="result-card-title">Your Investment Amount</div>
-                <div class="result-card-value" id="pa-result">-</div>
-                <div class="result-card-subtitle" id="pa-subtitle"></div>
-            </div>
-        </div>
-        
-        <!-- Investment Profit by Percentage Calculator -->
-        <div class="tab-content" id="investment-profit">
-            <div class="tab-description">
-                <h2>Investment Profit by Percentage Calculator</h2>
-                <p>Calculate how much profit you'll make based on your investment and expected return percentage.</p>
-                <div class="simple-formula">
-                    Profit = Investment × (Return % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="advanced-feature">
-                <div class="feature-header">
-                    <div class="feature-icon">💰</div>
-                    <div class="feature-title">Investment Profit Calculator</div>
-                </div>
-                
-                <div class="calculator-form">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="invp-amount">
-                                Investment Amount ($)
-                                <span class="form-explanation">(How much you're investing)</span>
-                            </label>
-                            <div class="input-with-symbol">
-                                <span class="input-symbol">$</span>
-                                <input type="number" id="invp-amount" placeholder="Enter investment amount" step="0.01" min="0">
-                            </div>
-                        </div>
+
+            <!-- Calculator Body -->
+            <div class="p-6">
+                <h2 class="text-xl font-bold text-purple-700 mb-6">Business Calculation Tool</h2>
+
+                <div class="space-y-6">
+                    <!-- Operation Selection -->
+                    <div>
+                        <label for="operation" class="block text-sm font-medium text-gray-700 mb-1">
+                            Select Calculation Type
+                        </label>
+                        <p class="text-xs text-gray-500 mb-2">Choose what you want to calculate</p>
                         
-                        <div class="form-group">
-                            <label for="invp-return">
-                                Expected Return (%)
-                                <span class="form-explanation">(Annual return percentage)</span>
-                            </label>
-                            <input type="number" id="invp-return" placeholder="Enter expected return %" step="0.01" min="0">
+                        <div class="custom-select">
+                            <select id="operation">
+                                <option selected disabled value="">Select Operation</option>
+                                <option value="calculateInvestment">
+                                    Calculate Required Investment from % and Profit
+                                </option>
+                                <option value="calculateInvestmentFromPercentage">
+                                    Calculate % Return from Investment and Profit
+                                </option>
+                                <option value="getAmountFromInvestment">
+                                    Calculate Profit from Investment and %
+                                </option>
+                                <option value="getPercentageFromCostAndSale">
+                                    Calculate % Profit from Cost and Sale Price
+                                </option>
+                                <option value="getProfitFromCostAndSale">
+                                    Calculate Profit Amount from Cost and Sale Price
+                                </option>
+                                <option value="getProfitFromPurchaseAnd%">
+                                    Calculate Profit Amount from Purchase Price and % Markup
+                                </option>
+                            </select>
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="invp-time">
-                            Investment Period (Years)
-                            <span class="form-explanation">(How long you'll keep the investment)</span>
-                        </label>
-                        <input type="number" id="invp-time" placeholder="Enter investment period" step="0.1" min="0.1" value="1">
+
+                    <!-- Input Fields Container -->
+                    <div id="input-fields" class="space-y-4">
+                        <!-- Fields will be added here dynamically -->
                     </div>
-                    
-                    <div class="toggle-container">
-                        <span class="toggle-label">Compound Interest:</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="invp-compound-toggle">
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="toggle-text" id="invp-compound-text">Simple interest</span>
-                    </div>
-                    
-                    <button class="calculate-button" id="invp-calculate">Calculate Profit</button>
-                </div>
-            </div>
-            
-            <div class="result-card" id="invp-result-card">
-                <div class="result-card-title">Your Investment Profit</div>
-                <div class="result-card-value" id="invp-profit">-</div>
-                <div class="result-card-subtitle">
-                    Final Value: <span id="invp-final">-</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- NEW: Get Investment From % and Profit -->
-        <div class="tab-content" id="investment-from-percent-profit">
-            <div class="tab-description">
-                <h2>Investment from Percentage and Profit Calculator</h2>
-                <p>Calculate how much you need to invest to achieve a specific profit at a given return percentage.</p>
-                <div class="simple-formula">
-                    Required Investment = Desired Profit ÷ (Return % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="ifpp-profit">
-                        Desired Profit ($)
-                        <span class="form-explanation">(How much profit you want to make)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="ifpp-profit" placeholder="Enter desired profit" step="0.01" min="0">
+
+                    <!-- Calculate Button -->
+                    <button id="calculate-btn"
+                        class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Calculate
+                    </button>
+
+                    <!-- Results Section -->
+                    <div id="result-container"
+                        class="mt-8 bg-gray-50 rounded-xl border-2 border-gray-200 p-6 text-center hidden">
+                        <h3 id="result-title" class="text-lg font-semibold text-gray-700 mb-2">Result:</h3>
+                        <p id="result-value" class="text-3xl font-bold text-purple-600 mb-2">-</p>
+                        <p id="result-details" class="text-sm text-gray-600 mt-2"></p>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="ifpp-percent">
-                        Expected Return (%)
-                        <span class="form-explanation">(Expected return percentage)</span>
-                    </label>
-                    <input type="number" id="ifpp-percent" placeholder="Enter expected return percentage" step="0.01" min="0.01">
-                </div>
-                
-                <button class="calculate-button" id="ifpp-calculate">Calculate Required Investment</button>
-            </div>
-            
-            <div class="result-card" id="ifpp-result-card">
-                <div class="result-card-title">Required Investment</div>
-                <div class="result-card-value" id="ifpp-result">-</div>
-                <div class="result-card-subtitle" id="ifpp-subtitle"></div>
-            </div>
-        </div>
-        
-        <!-- NEW: Get % From Investment and Profit -->
-        <div class="tab-content" id="percent-from-investment-profit">
-            <div class="tab-description">
-                <h2>Percentage from Investment and Profit Calculator</h2>
-                <p>Calculate the return percentage based on your investment and profit.</p>
-                <div class="simple-formula">
-                    Return % = (Profit ÷ Investment) × 100
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pfip-investment">
-                        Investment Amount ($)
-                        <span class="form-explanation">(How much you invested)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfip-investment" placeholder="Enter investment amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pfip-profit">
-                        Profit Amount ($)
-                        <span class="form-explanation">(How much profit you made)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfip-profit" placeholder="Enter profit amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <button class="calculate-button" id="pfip-calculate">Calculate Return Percentage</button>
-            </div>
-            
-            <div class="result-card" id="pfip-result-card">
-                <div class="result-card-title">Return Percentage</div>
-                <div class="result-card-value" id="pfip-result">-</div>
-                <div class="result-card-subtitle" id="pfip-subtitle"></div>
-            </div>
-        </div>
-        
-        <!-- NEW: Get Profit From Investment and % -->
-        <div class="tab-content" id="profit-from-investment-percent">
-            <div class="tab-description">
-                <h2>Profit from Investment and Percentage Calculator</h2>
-                <p>Calculate how much profit you'll make based on your investment and return percentage.</p>
-                <div class="simple-formula">
-                    Profit = Investment × (Return % ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="pfip-investment2">
-                        Investment Amount ($)
-                        <span class="form-explanation">(How much you invested)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="pfip-investment2" placeholder="Enter investment amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pfip-percent">
-                        Return Percentage (%)
-                        <span class="form-explanation">(Expected return percentage)</span>
-                    </label>
-                    <input type="number" id="pfip-percent" placeholder="Enter return percentage" step="0.01" min="0">
-                </div>
-                
-                <button class="calculate-button" id="pfip-calculate2">Calculate Profit</button>
-            </div>
-            
-            <div class="result-card" id="pfip-result-card2">
-                <div class="result-card-title">Expected Profit</div>
-                <div class="result-card-value" id="pfip-result2">-</div>
-                <div class="result-card-subtitle" id="pfip-subtitle2"></div>
-            </div>
-        </div>
-        
-        <!-- FINANCE CALCULATORS -->
-        
-        <!-- Loan Calculator -->
-        <div class="tab-content" id="loan">
-            <div class="tab-description">
-                <h2>Loan Payment Calculator</h2>
-                <p>Find out how much you'll pay each month for a loan.</p>
-                <div class="simple-formula">
-                    Monthly Payment = Loan Amount × (Monthly Rate × (1 + Monthly Rate)^Months) ÷ ((1 + Monthly Rate)^Months - 1)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="loan-principal">
-                        Loan Amount ($)
-                        <span class="form-explanation">(How much money you're borrowing)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="loan-principal" placeholder="Enter the loan amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="loan-rate">
-                        Interest Rate (% per year)
-                        <span class="form-explanation">(Annual interest rate on the loan)</span>
-                    </label>
-                    <input type="number" id="loan-rate" placeholder="Enter annual interest rate" step="0.01" min="0" value="5">
-                </div>
-                
-                <div class="form-group">
-                    <label for="loan-term">
-                        Loan Length (Years)
-                        <span class="form-explanation">(How many years to pay back the loan)</span>
-                    </label>
-                    <input type="number" id="loan-term" placeholder="Enter how many years" step="1" min="1">
-                </div>
-                
-                <button class="calculate-button" id="loan-calculate">Calculate Payment</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Monthly Payment:</div>
-                <div class="result-value" id="loan-result">-</div>
-                <div class="result-details" id="loan-details"></div>
-            </div>
-        </div>
-        
-        <!-- Compound Interest Calculator -->
-        <div class="tab-content" id="compound-interest">
-            <div class="tab-description">
-                <h2>Savings Growth Calculator</h2>
-                <p>Find out how much your savings will grow over time with interest.</p>
-                <div class="simple-formula">
-                    Future Value = Starting Amount × (1 + Interest Rate)^Time
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="ci-principal">
-                        Starting Amount ($)
-                        <span class="form-explanation">(How much money you start with)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="ci-principal" placeholder="Enter your starting amount" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ci-rate">
-                        Yearly Interest Rate (%)
-                        <span class="form-explanation">(How much extra you earn each year as a percentage)</span>
-                    </label>
-                    <input type="number" id="ci-rate" placeholder="Enter the yearly interest rate" step="0.01" min="0">
-                </div>
-                
-                <div class="form-group">
-                    <label for="ci-time">
-                        Time Period (Years)
-                        <span class="form-explanation">(How many years you'll save for)</span>
-                    </label>
-                    <input type="number" id="ci-time" placeholder="Enter number of years" step="1" min="1">
-                </div>
-                
-                <div class="form-group">
-                    <label for="ci-compound">
-                        How Often Interest Is Added
-                        <span class="form-explanation">(How frequently the interest is calculated)</span>
-                    </label>
-                    <select id="ci-compound">
-                        <option value="1">Once a year</option>
-                        <option value="2">Twice a year</option>
-                        <option value="4">Four times a year</option>
-                        <option value="12" selected>Monthly</option>
-                        <option value="365">Daily</option>
-                    </select>
-                </div>
-                
-                <button class="calculate-button" id="ci-calculate">Calculate Future Value</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Your Future Savings:</div>
-                <div class="result-value" id="ci-result">-</div>
-                <div class="result-details" id="ci-details"></div>
-            </div>
-        </div>
-        
-        <!-- TAX CALCULATORS -->
-        
-        <!-- Sales Tax Calculator -->
-        <div class="tab-content" id="sales-tax">
-            <div class="tab-description">
-                <h2>Sales Tax Calculator</h2>
-                <p>Calculate the total price after adding sales tax.</p>
-                <div class="simple-formula">
-                    Total Price = Price + (Price × Tax Rate ÷ 100)
-                </div>
-            </div>
-            
-            <div class="calculator-form">
-                <div class="form-group">
-                    <label for="st-price">
-                        Price Before Tax ($)
-                        <span class="form-explanation">(The price before tax is added)</span>
-                    </label>
-                    <div class="input-with-symbol">
-                        <span class="input-symbol">$</span>
-                        <input type="number" id="st-price" placeholder="Enter the price before tax" step="0.01" min="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="st-rate">
-                        Tax Rate (%)
-                        <span class="form-explanation">(The sales tax percentage in your area)</span>
-                    </label>
-                    <input type="number" id="st-rate" placeholder="Enter the tax rate" step="0.01" min="0">
-                </div>
-                
-                <button class="calculate-button" id="st-calculate">Calculate Total Price</button>
-            </div>
-            
-            <div class="result-section">
-                <div class="result-title">Total Price With Tax:</div>
-                <div class="result-value" id="st-result">-</div>
-                <div class="result-details" id="st-details"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Tab switching functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Category switching
-            const categoryButtons = document.querySelectorAll('.category-button');
-            const tabNavigationContainers = document.querySelectorAll('.tab-navigation-container');
-            
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all category buttons and tab navigation containers
-                    categoryButtons.forEach(btn => btn.classList.remove('active'));
-                    tabNavigationContainers.forEach(container => container.classList.remove('active'));
-                    
-                    // Add active class to clicked category button and corresponding tab navigation container
-                    button.classList.add('active');
-                    const categoryId = button.getAttribute('data-category');
-                    document.getElementById(categoryId + '-tabs').classList.add('active');
-                    
-                    // Get the first tab in this category and activate it
-                    const firstTabButton = document.querySelector(`#${categoryId}-tabs .tab-button`);
-                    if (firstTabButton) {
-                        // Simulate a click on the first tab button
-                        firstTabButton.click();
-                    }
+        document.addEventListener('DOMContentLoaded', function () {
+            const operationSelect = document.getElementById('operation');
+            const inputFieldsContainer = document.getElementById('input-fields');
+            const resultContainer = document.getElementById('result-container');
+            const resultTitle = document.getElementById('result-title');
+            const resultValue = document.getElementById('result-value');
+            const resultDetails = document.getElementById('result-details');
+            const calculateBtn = document.getElementById('calculate-btn');
+
+            // Current operation
+            let currentOperation = '';
+
+            // Format number as currency using Numeral.js
+            function formatCurrency(value) {
+                return numeral(value).format('$0,0.00');
+            }
+
+            // Format number as percentage
+            function formatPercentage(value) {
+                return numeral(value).format('0,0.00') + '%';
+            }
+
+            // Show result with animation
+            function showResult(title, value, details = '') {
+                resultTitle.textContent = title;
+                resultValue.textContent = value;
+                resultDetails.textContent = details;
+
+                if (value !== '-') {
+                    resultContainer.classList.remove('hidden');
+                    resultContainer.classList.add('fade-in');
+                    resultDetails.style.display = details ? 'block' : 'none';
+                } else {
+                    resultContainer.classList.add('hidden');
+                }
+            }
+
+            // Create input field with event listeners for live calculation
+            function createInputField(id, label, explanation, symbol = null) {
+                const div = document.createElement('div');
+
+                const labelElement = document.createElement('label');
+                labelElement.setAttribute('for', id);
+                labelElement.className = 'block text-sm font-medium text-gray-700 mb-1';
+                labelElement.textContent = label;
+
+                const explanationElement = document.createElement('p');
+                explanationElement.className = 'text-xs text-gray-500 mb-2';
+                explanationElement.textContent = explanation;
+
+                const inputWrapper = document.createElement('div');
+                inputWrapper.className = symbol ? 'relative mt-1' : 'mt-1';
+
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = id;
+                input.placeholder = 'Enter ' + label.toLowerCase();
+                input.step = '0.01';
+                input.min = '0';
+                input.className = 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-all';
+
+                // Add event listeners for live calculation
+                input.addEventListener('input', performCalculation);
+                input.addEventListener('keydown', function (e) {
+                    // Small delay to ensure the input value is updated
+                    setTimeout(performCalculation, 10);
                 });
+
+                if (symbol) {
+                    input.className += ' pl-10';
+
+                    const symbolSpan = document.createElement('span');
+                    symbolSpan.className = 'absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-medium';
+                    symbolSpan.textContent = symbol;
+
+                    inputWrapper.appendChild(symbolSpan);
+                }
+
+                inputWrapper.appendChild(input);
+
+                div.appendChild(labelElement);
+                div.appendChild(explanationElement);
+                div.appendChild(inputWrapper);
+
+                return div;
+            }
+
+            // Perform calculation based on current operation
+            function performCalculation() {
+                switch (currentOperation) {
+                    case 'calculateInvestment':
+                        calculateRequiredInvestment();
+                        break;
+
+                    case 'calculateInvestmentFromPercentage':
+                        calculateReturnPercentage();
+                        break;
+
+                    case 'getAmountFromInvestment':
+                        calculateProfitFromInvestment();
+                        break;
+
+                    case 'getPercentageFromCostAndSale':
+                        calculatePercentageFromCostSale();
+                        break;
+
+                    case 'getProfitFromCostAndSale':
+                        calculateProfitFromCostSale();
+                        break;
+
+                    case 'getProfitFromPurchaseAnd%':
+                        calculateProfitFromPurchasePercent();
+                        break;
+                }
+            }
+
+            // Handle operation selection
+            operationSelect.addEventListener('change', function () {
+                inputFieldsContainer.innerHTML = '';
+                resultContainer.classList.add('hidden');
+
+                currentOperation = this.value;
+
+                switch (currentOperation) {
+                    case 'calculateInvestment':
+                        inputFieldsContainer.appendChild(createInputField('desired-profit', 'Desired Profit', 'How much profit you want to make', '$'));
+                        inputFieldsContainer.appendChild(createInputField('expected-return', 'Expected Return %', 'Expected percentage return on investment'));
+                        break;
+
+                    case 'calculateInvestmentFromPercentage':
+                        inputFieldsContainer.appendChild(createInputField('investment-amount', 'Investment Amount', 'How much you invested', '$'));
+                        inputFieldsContainer.appendChild(createInputField('profit-amount', 'Profit Amount', 'How much profit you made', '$'));
+                        break;
+
+                    case 'getAmountFromInvestment':
+                        inputFieldsContainer.appendChild(createInputField('investment-amount2', 'Investment Amount', 'How much you invested', '$'));
+                        inputFieldsContainer.appendChild(createInputField('return-percentage', 'Return Percentage', 'Expected return percentage'));
+                        break;
+
+                    case 'getPercentageFromCostAndSale':
+                        inputFieldsContainer.appendChild(createInputField('cost-price', 'Cost Price', 'How much you paid for the item', '$'));
+                        inputFieldsContainer.appendChild(createInputField('sale-price', 'Sale Price', 'How much you sold the item for', '$'));
+                        break;
+
+                    case 'getProfitFromCostAndSale':
+                        inputFieldsContainer.appendChild(createInputField('cost-price2', 'Cost Price', 'How much you paid for the item', '$'));
+                        inputFieldsContainer.appendChild(createInputField('sale-price2', 'Sale Price', 'How much you sold the item for', '$'));
+                        break;
+
+                    case 'getProfitFromPurchaseAnd%':
+                        inputFieldsContainer.appendChild(createInputField('purchase-price', 'Purchase Price', 'How much you paid for the item', '$'));
+                        inputFieldsContainer.appendChild(createInputField('markup-percentage', 'Markup Percentage', 'Percentage markup on the purchase price'));
+                        break;
+                }
             });
             
-            // Tab switching
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons and contents
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    
-                    // Add active class to clicked button and corresponding content
-                    button.classList.add('active');
-                    const tabId = button.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
-            
-            // Add input event listeners for real-time calculation
-            setupRealTimeCalculations();
-            
-            // Setup toggle switches
-            setupToggleSwitches();
-            
-            // Setup calculate buttons
-            setupCalculateButtons();
+            // Calculate button click handler
+            calculateBtn.addEventListener('click', performCalculation);
+
+            function calculateRequiredInvestment() {
+                const desiredProfit = parseFloat(document.getElementById('desired-profit')?.value || '0');
+                const expectedReturn = parseFloat(document.getElementById('expected-return')?.value || '0');
+
+                if (isNaN(desiredProfit)) {
+                    showResult('Required Investment:', '-', 'Please enter a valid desired profit amount');
+                    return;
+                }
+                
+                if (isNaN(expectedReturn) || expectedReturn <= 0) {
+                    showResult('Required Investment:', '-', 'Please enter a valid expected return percentage (greater than 0)');
+                    return;
+                }
+
+                const requiredInvestment = desiredProfit / (expectedReturn / 100);
+
+                showResult(
+                    'Required Investment:',
+                    formatCurrency(requiredInvestment),
+                    `To earn ${formatCurrency(desiredProfit)} at ${formatPercentage(expectedReturn)} return`
+                );
+            }
+
+            // Calculate % Return from Investment and Profit
+            function calculateReturnPercentage() {
+                const investment = parseFloat(document.getElementById('investment-amount')?.value || '0');
+                const profit = parseFloat(document.getElementById('profit-amount')?.value || '0');
+
+                if (isNaN(investment)) {
+                    showResult('Return Percentage:', '-', 'Please enter a valid investment amount');
+                    return;
+                }
+                
+                if (investment <= 0) {
+                    showResult('Return Percentage:', '-', 'Investment amount must be greater than 0');
+                    return;
+                }
+
+                const returnPercentage = (profit / investment) * 100;
+
+                showResult(
+                    'Return Percentage:',
+                    formatPercentage(returnPercentage),
+                    `${formatCurrency(profit)} profit on ${formatCurrency(investment)} investment`
+                );
+            }
+
+            // Calculate Profit from Investment and %
+            function calculateProfitFromInvestment() {
+                const investment = parseFloat(document.getElementById('investment-amount2')?.value || '0');
+                const returnPercentage = parseFloat(document.getElementById('return-percentage')?.value || '0');
+
+                if (isNaN(investment)) {
+                    showResult('Expected Profit:', '-', 'Please enter a valid investment amount');
+                    return;
+                }
+                
+                if (isNaN(returnPercentage)) {
+                    showResult('Expected Profit:', '-', 'Please enter a valid return percentage');
+                    return;
+                }
+
+                const profit = investment * (returnPercentage / 100);
+                const finalValue = investment + profit;
+
+                showResult(
+                    'Expected Profit:',
+                    formatCurrency(profit),
+                    `Final value: ${formatCurrency(finalValue)}`
+                );
+            }
+
+            // Calculate % Profit from Cost and Sale Price
+            function calculatePercentageFromCostSale() {
+                const costPrice = parseFloat(document.getElementById('cost-price')?.value || '0');
+                const salePrice = parseFloat(document.getElementById('sale-price')?.value || '0');
+
+                if (isNaN(costPrice)) {
+                    showResult('Profit/Loss Percentage:', '-', 'Please enter a valid cost price');
+                    return;
+                }
+                
+                if (costPrice <= 0) {
+                    showResult('Profit/Loss Percentage:', '-', 'Cost price must be greater than 0');
+                    return;
+                }
+                
+                if (isNaN(salePrice)) {
+                    showResult('Profit/Loss Percentage:', '-', 'Please enter a valid sale price');
+                    return;
+                }
+
+                const profitLoss = salePrice - costPrice;
+                const percentage = (profitLoss / costPrice) * 100;
+
+                let resultText, detailsText;
+
+                if (percentage > 0) {
+                    resultText = `Profit: ${formatPercentage(percentage)}`;
+                    detailsText = `You made ${formatCurrency(profitLoss)} profit on a cost of ${formatCurrency(costPrice)}`;
+                } else if (percentage < 0) {
+                    resultText = `Loss: ${formatPercentage(Math.abs(percentage))}`;
+                    detailsText = `You lost ${formatCurrency(Math.abs(profitLoss))} on a cost of ${formatCurrency(costPrice)}`;
+                } else {
+                    resultText = '0.00%';
+                    detailsText = 'Your selling price equals your cost price';
+                }
+
+                showResult('Profit/Loss Percentage:', resultText, detailsText);
+            }
+
+            // Calculate Profit Amount from Cost and Sale Price
+            function calculateProfitFromCostSale() {
+                const costPrice = parseFloat(document.getElementById('cost-price2')?.value || '0');
+                const salePrice = parseFloat(document.getElementById('sale-price2')?.value || '0');
+
+                if (isNaN(costPrice)) {
+                    showResult('Profit/Loss:', '-', 'Please enter a valid cost price');
+                    return;
+                }
+                
+                if (isNaN(salePrice)) {
+                    showResult('Profit/Loss:', '-', 'Please enter a valid sale price');
+                    return;
+                }
+
+                const profit = salePrice - costPrice;
+
+                let resultText, detailsText;
+
+                if (profit > 0) {
+                    resultText = `Profit: ${formatCurrency(profit)}`;
+                    detailsText = `You made ${formatPercentage((profit / costPrice) * 100)} profit on your cost`;
+                } else if (profit < 0) {
+                    resultText = `Loss: ${formatCurrency(Math.abs(profit))}`;
+                    detailsText = `You lost ${formatPercentage((Math.abs(profit) / costPrice) * 100)} of your cost`;
+                } else {
+                    resultText = 'No Profit or Loss';
+                    detailsText = 'Your selling price equals your cost price';
+                }
+
+                showResult('Profit/Loss:', resultText, detailsText);
+            }
+
+            // Calculate Profit Amount from Purchase Price and % Markup
+            function calculateProfitFromPurchasePercent() {
+                const purchasePrice = parseFloat(document.getElementById('purchase-price')?.value || '0');
+                const markupPercentage = parseFloat(document.getElementById('markup-percentage')?.value || '0');
+
+                if (isNaN(purchasePrice)) {
+                    showResult('Profit Amount:', '-', 'Please enter a valid purchase price');
+                    return;
+                }
+                
+                if (purchasePrice <= 0) {
+                    showResult('Profit Amount:', '-', 'Purchase price must be greater than 0');
+                    return;
+                }
+                
+                if (isNaN(markupPercentage)) {
+                    showResult('Profit Amount:', '-', 'Please enter a valid markup percentage');
+                    return;
+                }
+
+                const profit = purchasePrice * (markupPercentage / 100);
+                const salePrice = purchasePrice + profit;
+
+                let resultText, detailsText;
+
+                if (profit > 0) {
+                    resultText = formatCurrency(profit);
+                    detailsText = `Selling price: ${formatCurrency(salePrice)}`;
+                } else if (profit < 0) {
+                    resultText = `-${formatCurrency(Math.abs(profit))}`;
+                    detailsText = `Selling price: ${formatCurrency(salePrice)}`;
+                } else {
+                    resultText = '$0.00';
+                    detailsText = 'No profit or loss';
+                }
+
+                showResult('Profit Amount:', resultText, detailsText);
+            }
         });
-        
-        // Setup toggle switches
-        function setupToggleSwitches() {
-            // ROI time period toggle
-            const roiTimeToggle = document.getElementById('roi-time-toggle');
-            const roiTimeGroup = document.getElementById('roi-time-group');
-            const roiTimeText = document.getElementById('roi-time-text');
-            
-            if (roiTimeToggle) {
-                roiTimeToggle.addEventListener('change', function() {
-                    if (this.checked) {
-                        roiTimeGroup.style.display = 'block';
-                        roiTimeText.textContent = 'Include time period (Annualized ROI)';
-                    } else {
-                        roiTimeGroup.style.display = 'none';
-                        roiTimeText.textContent = 'Include time period';
-                    }
-                });
-            }
-            
-            // Investment profit compound toggle
-            const invpCompoundToggle = document.getElementById('invp-compound-toggle');
-            const invpCompoundText = document.getElementById('invp-compound-text');
-            
-            if (invpCompoundToggle) {
-                invpCompoundToggle.addEventListener('change', function() {
-                    if (this.checked) {
-                        invpCompoundText.textContent = 'Compound interest';
-                    } else {
-                        invpCompoundText.textContent = 'Simple interest';
-                    }
-                });
-            }
-        }
-        
-        // Setup calculate buttons
-        function setupCalculateButtons() {
-            // Profit/Loss calculator
-            const plCalculateBtn = document.getElementById('pl-calculate');
-            if (plCalculateBtn) {
-                plCalculateBtn.addEventListener('click', calculateProfitLoss);
-            }
-            
-            // ROI calculator
-            const roiCalculateBtn = document.getElementById('roi-calculate');
-            if (roiCalculateBtn) {
-                roiCalculateBtn.addEventListener('click', calculateROIAdvanced);
-            }
-            
-            // Investment percentage calculator
-            const ipCalculateBtn = document.getElementById('ip-calculate');
-            if (ipCalculateBtn) {
-                ipCalculateBtn.addEventListener('click', calculateInvestmentPercentage);
-            }
-            
-            // Percentage to amount calculator
-            const paCalculateBtn = document.getElementById('pa-calculate');
-            if (paCalculateBtn) {
-                paCalculateBtn.addEventListener('click', calculatePercentageToAmount);
-            }
-            
-            // Investment profit calculator
-            const invpCalculateBtn = document.getElementById('invp-calculate');
-            if (invpCalculateBtn) {
-                invpCalculateBtn.addEventListener('click', calculateInvestmentProfit);
-            }
-            
-            // Loan calculator
-            const loanCalculateBtn = document.getElementById('loan-calculate');
-            if (loanCalculateBtn) {
-                loanCalculateBtn.addEventListener('click', calculateLoanAdvanced);
-            }
-            
-            // Compound interest calculator
-            const ciCalculateBtn = document.getElementById('ci-calculate');
-            if (ciCalculateBtn) {
-                ciCalculateBtn.addEventListener('click', calculateCompoundInterestAdvanced);
-            }
-            
-            // Sales tax calculator
-            const stCalculateBtn = document.getElementById('st-calculate');
-            if (stCalculateBtn) {
-                stCalculateBtn.addEventListener('click', calculateSalesTaxAdvanced);
-            }
-            
-            // NEW: Profit from Cost and Sale
-            const pfcsCalculateBtn = document.getElementById('pfcs-calculate');
-            if (pfcsCalculateBtn) {
-                pfcsCalculateBtn.addEventListener('click', calculateProfitFromCostSale);
-            }
-            
-            // NEW: Percentage from Cost and Sale
-            const pfcsPercentCalculateBtn = document.getElementById('pfcs-percent-calculate');
-            if (pfcsPercentCalculateBtn) {
-                pfcsPercentCalculateBtn.addEventListener('click', calculatePercentFromCostSale);
-            }
-            
-            // NEW: Profit from Purchase and Sale %
-            const pfppCalculateBtn = document.getElementById('pfpp-calculate');
-            if (pfppCalculateBtn) {
-                pfppCalculateBtn.addEventListener('click', calculateProfitFromPurchasePercent);
-            }
-            
-            // NEW: Investment from % and Profit
-            const ifppCalculateBtn = document.getElementById('ifpp-calculate');
-            if (ifppCalculateBtn) {
-                ifppCalculateBtn.addEventListener('click', calculateInvestmentFromPercentProfit);
-            }
-            
-            // NEW: % from Investment and Profit
-            const pfipCalculateBtn = document.getElementById('pfip-calculate');
-            if (pfipCalculateBtn) {
-                pfipCalculateBtn.addEventListener('click', calculatePercentFromInvestmentProfit);
-            }
-            
-            // NEW: Profit from Investment and %
-            const pfipCalculateBtn2 = document.getElementById('pfip-calculate2');
-            if (pfipCalculateBtn2) {
-                pfipCalculateBtn2.addEventListener('click', calculateProfitFromInvestmentPercent);
-            }
-        }
-        
-        // Setup real-time calculations
-        function setupRealTimeCalculations() {
-            // Pricing Calculators
-            addInputListeners(['mu-cost', 'mu-percentage'], calculateMarkup);
-            addInputListeners(['dc-original', 'dc-percentage'], calculateDiscount);
-            addInputListeners(['mtm-margin'], calculateMarginToMarkup);
-            addInputListeners(['mtm-markup'], calculateMarkupToMargin);
-            addInputListeners(['pi-original', 'pi-percentage'], calculatePriceIncrease);
-            addInputListeners(['pd-original', 'pd-percentage'], calculatePriceDecrease);
-            
-            // Profit Calculators
-            addInputListeners(['pm-revenue', 'pm-cost'], calculateProfitMargin);
-            addInputListeners(['pa-revenue', 'pa-cost'], calculateProfitAmount);
-            addInputListeners(['pt-fixed', 'pt-target', 'pt-margin'], calculateTargetProfit);
-            addInputListeners(['be-fixed', 'be-price', 'be-variable'], calculateBreakEven);
-            addInputListeners(['ptp-profit', 'ptp-sales'], calculateProfitToPercent);
-            addInputListeners(['ptp-percent', 'ptp-total'], calculatePercentToProfit);
-        }
-        
-        // Helper function to add input listeners to multiple elements
-        function addInputListeners(ids, calculationFunction) {
-            ids.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.addEventListener('input', calculationFunction);
-                }
-            });
-        }
-        
-        // Format number as currency
-        function formatCurrency(value) {
-            return '$' + parseFloat(value).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-        }
-        
-        // Format number as percentage
-        function formatPercentage(value) {
-            return parseFloat(value).toFixed(2) + '%';
-        }
-        
-        // Format number with commas
-        function formatNumber(value) {
-            return parseFloat(value).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        
-        // Show result with animation
-        function showResult(resultElement, value, isResult = true) {
-            if (resultElement) {
-                resultElement.textContent = value;
-                if (isResult && value !== '-') {
-                    resultElement.closest('.result-section')?.classList.add('has-result');
-                } else {
-                    resultElement.closest('.result-section')?.classList.remove('has-result');
-                }
-            }
-        }
-        
-        // Show result card with animation
-        function showResultCard(cardElement, show = true) {
-            if (cardElement) {
-                if (show) {
-                    cardElement.classList.add('show');
-                } else {
-                    cardElement.classList.remove('show');
-                }
-            }
-        }
-        
-        // PRICING CALCULATORS
-        
-        // Markup Calculator
-        function calculateMarkup() {
-            const cost = parseFloat(document.getElementById('mu-cost').value);
-            const markupPercentage = parseFloat(document.getElementById('mu-percentage').value);
-            const resultElement = document.getElementById('mu-result');
-            
-            if (isNaN(cost) || isNaN(markupPercentage)) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const sellingPrice = cost + (cost * (markupPercentage / 100));
-            showResult(resultElement, formatCurrency(sellingPrice));
-        }
-        
-        // Discount Calculator
-        function calculateDiscount() {
-            const originalPrice = parseFloat(document.getElementById('dc-original').value);
-            const discountPercentage = parseFloat(document.getElementById('dc-percentage').value);
-            const resultElement = document.getElementById('dc-result');
-            
-            if (isNaN(originalPrice) || isNaN(discountPercentage)) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const finalPrice = originalPrice - (originalPrice * (discountPercentage / 100));
-            showResult(resultElement, formatCurrency(finalPrice));
-        }
-        
-        // Margin to Markup Calculator
-        function calculateMarginToMarkup() {
-            const margin = parseFloat(document.getElementById('mtm-margin').value);
-            const resultElement = document.getElementById('mtm-result');
-            
-            if (isNaN(margin) || margin >= 100) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const markup = margin / (100 - margin) * 100;
-            showResult(resultElement, formatPercentage(markup));
-        }
-        
-        // Markup to Margin Calculator
-        function calculateMarkupToMargin() {
-            const markup = parseFloat(document.getElementById('mtm-markup').value);
-            const resultElement = document.getElementById('mtm-margin-result');
-            
-            if (isNaN(markup)) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const margin = markup / (100 + markup) * 100;
-            showResult(resultElement, formatPercentage(margin));
-        }
-        
-        // Price Increase Calculator
-        function calculatePriceIncrease() {
-            const originalPrice = parseFloat(document.getElementById('pi-original').value);
-            const increasePercentage = parseFloat(document.getElementById('pi-percentage').value);
-            const resultElement = document.getElementById('pi-result');
-            
-            if (isNaN(originalPrice) || isNaN(increasePercentage)) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const newPrice = originalPrice + (originalPrice * (increasePercentage / 100));
-            showResult(resultElement, formatCurrency(newPrice));
-        }
-        
-        // Price Decrease Calculator
-        function calculatePriceDecrease() {
-            const originalPrice = parseFloat(document.getElementById('pd-original').value);
-            const decreasePercentage = parseFloat(document.getElementById('pd-percentage').value);
-            const resultElement = document.getElementById('pd-result');
-            
-            if (isNaN(originalPrice) || isNaN(decreasePercentage)) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const newPrice = originalPrice - (originalPrice * (decreasePercentage / 100));
-            showResult(resultElement, formatCurrency(newPrice));
-        }
-        
-        // PROFIT CALCULATORS
-        
-        // Profit Margin Calculator
-        function calculateProfitMargin() {
-            const revenue = parseFloat(document.getElementById('pm-revenue').value);
-            const cost = parseFloat(document.getElementById('pm-cost').value);
-            const resultElement = document.getElementById('pm-result');
-            
-            if (isNaN(revenue) || isNaN(cost) || revenue <= 0) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const profitMargin = ((revenue - cost) / revenue) * 100;
-            showResult(resultElement, formatPercentage(profitMargin));
-        }
-        
-        // Profit Amount Calculator
-        function calculateProfitAmount() {
-            const revenue = parseFloat(document.getElementById('pa-revenue').value);
-            const cost = parseFloat(document.getElementById('pa-cost').value);
-            const resultElement = document.getElementById('pa-result');
-            
-            if (isNaN(revenue) || isNaN(cost)) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const profit = revenue - cost;
-            showResult(resultElement, formatCurrency(profit));
-        }
-        
-        // Target Profit Calculator
-        function calculateTargetProfit() {
-            const fixedCosts = parseFloat(document.getElementById('pt-fixed').value);
-            const targetProfit = parseFloat(document.getElementById('pt-target').value);
-            const contributionMarginRatio = parseFloat(document.getElementById('pt-margin').value);
-            const resultElement = document.getElementById('pt-result');
-            
-            if (isNaN(fixedCosts) || isNaN(targetProfit) || isNaN(contributionMarginRatio) || contributionMarginRatio <= 0) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const requiredSales = (fixedCosts + targetProfit) / (contributionMarginRatio / 100);
-            showResult(resultElement, formatCurrency(requiredSales));
-        }
-        
-        // Break-Even Analysis
-        function calculateBreakEven() {
-            const fixedCosts = parseFloat(document.getElementById('be-fixed').value);
-            const pricePerUnit = parseFloat(document.getElementById('be-price').value);
-            const variableCostPerUnit = parseFloat(document.getElementById('be-variable').value);
-            const resultElement = document.getElementById('be-result');
-            
-            if (isNaN(fixedCosts) || isNaN(pricePerUnit) || isNaN(variableCostPerUnit) || 
-                pricePerUnit <= variableCostPerUnit) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const breakEvenPoint = fixedCosts / (pricePerUnit - variableCostPerUnit);
-            showResult(resultElement, formatNumber(Math.ceil(breakEvenPoint)) + " items");
-        }
-        
-        // Profit to Percentage Calculator
-        function calculateProfitToPercent() {
-            const profit = parseFloat(document.getElementById('ptp-profit').value);
-            const sales = parseFloat(document.getElementById('ptp-sales').value);
-            const resultElement = document.getElementById('ptp-result');
-            
-            if (isNaN(profit) || isNaN(sales) || sales <= 0) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const percentage = (profit / sales) * 100;
-            showResult(resultElement, formatPercentage(percentage));
-        }
-        
-        // Percentage to Profit Calculator
-        function calculatePercentToProfit() {
-            const percentage = parseFloat(document.getElementById('ptp-percent').value);
-            const sales = parseFloat(document.getElementById('ptp-total').value);
-            const resultElement = document.getElementById('ptp-amount-result');
-            
-            if (isNaN(percentage) || isNaN(sales)) {
-                showResult(resultElement, '-');
-                return;
-            }
-            
-            const profit = sales * (percentage / 100);
-            showResult(resultElement, formatCurrency(profit));
-        }
-        
-        // Profit/Loss Calculator
-        function calculateProfitLoss() {
-            const revenue = parseFloat(document.getElementById('pl-revenue').value);
-            const expenses = parseFloat(document.getElementById('pl-expenses').value);
-            const resultElement = document.getElementById('pl-result');
-            const detailsElement = document.getElementById('pl-details');
-            
-            if (isNaN(revenue) || isNaN(expenses)) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const profitLoss = revenue - expenses;
-            let resultText, detailsText;
-            
-            if (profitLoss > 0) {
-                resultText = `Making a Profit of ${formatCurrency(profitLoss)}`;
-                detailsText = `Your profit margin is ${formatPercentage((profitLoss / revenue) * 100)}`;
-            } else if (profitLoss < 0) {
-                resultText = `Taking a Loss of ${formatCurrency(Math.abs(profitLoss))}`;
-                detailsText = `Your loss is ${formatPercentage((Math.abs(profitLoss) / revenue) * 100)} of revenue`;
-            } else {
-                resultText = 'Breaking Even';
-                detailsText = 'Your revenue exactly matches your expenses';
-            }
-            
-            showResult(resultElement, resultText);
-            showResult(detailsElement, detailsText, false);
-        }
-        
-        // NEW: Get Profit From Cost And Sale
-        function calculateProfitFromCostSale() {
-            const costPrice = parseFloat(document.getElementById('pfcs-cost').value);
-            const salePrice = parseFloat(document.getElementById('pfcs-sale').value);
-            const resultElement = document.getElementById('pfcs-result');
-            const detailsElement = document.getElementById('pfcs-details');
-            
-            if (isNaN(costPrice) || isNaN(salePrice)) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const profit = salePrice - costPrice;
-            let resultText, detailsText;
-            
-            if (profit > 0) {
-                resultText = `Profit: ${formatCurrency(profit)}`;
-                detailsText = `You made ${formatPercentage((profit / costPrice) * 100)} profit on your cost`;
-            } else if (profit < 0) {
-                resultText = `Loss: ${formatCurrency(Math.abs(profit))}`;
-                detailsText = `You lost ${formatPercentage((Math.abs(profit) / costPrice) * 100)} of your cost`;
-            } else {
-                resultText = 'No Profit or Loss';
-                detailsText = 'Your selling price equals your cost price';
-            }
-            
-            showResult(resultElement, resultText);
-            showResult(detailsElement, detailsText, false);
-        }
-        
-        // NEW: Get Percentage From Cost And Sale
-        function calculatePercentFromCostSale() {
-            const costPrice = parseFloat(document.getElementById('pfcs-percent-cost').value);
-            const salePrice = parseFloat(document.getElementById('pfcs-percent-sale').value);
-            const resultElement = document.getElementById('pfcs-percent-result');
-            const detailsElement = document.getElementById('pfcs-percent-details');
-            
-            if (isNaN(costPrice) || isNaN(salePrice) || costPrice <= 0) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const profitLoss = salePrice - costPrice;
-            const percentage = (profitLoss / costPrice) * 100;
-            let resultText, detailsText;
-            
-            if (percentage > 0) {
-                resultText = `Profit: ${formatPercentage(percentage)}`;
-                detailsText = `You made ${formatCurrency(profitLoss)} profit on a cost of ${formatCurrency(costPrice)}`;
-            } else if (percentage < 0) {
-                resultText = `Loss: ${formatPercentage(Math.abs(percentage))}`;
-                detailsText = `You lost ${formatCurrency(Math.abs(profitLoss))} on a cost of ${formatCurrency(costPrice)}`;
-            } else {
-                resultText = '0.00%';
-                detailsText = 'Your selling price equals your cost price';
-            }
-            
-            showResult(resultElement, resultText);
-            showResult(detailsElement, detailsText, false);
-        }
-        
-        // NEW: Get Profit From Purchase And Sale %
-        function calculateProfitFromPurchasePercent() {
-            const purchasePrice = parseFloat(document.getElementById('pfpp-purchase').value);
-            const salePercent = parseFloat(document.getElementById('pfpp-percent').value);
-            const resultElement = document.getElementById('pfpp-result');
-            const detailsElement = document.getElementById('pfpp-details');
-            
-            if (isNaN(purchasePrice) || isNaN(salePercent) || purchasePrice <= 0) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const profit = purchasePrice * (salePercent / 100);
-            const salePrice = purchasePrice + profit;
-            let resultText, detailsText;
-            
-            if (profit > 0) {
-                resultText = formatCurrency(profit);
-                detailsText = `Selling price: ${formatCurrency(salePrice)}`;
-            } else if (profit < 0) {
-                resultText = `-${formatCurrency(Math.abs(profit))}`;
-                detailsText = `Selling price: ${formatCurrency(salePrice)}`;
-            } else {
-                resultText = '$0.00';
-                detailsText = 'No profit or loss';
-            }
-            
-            showResult(resultElement, resultText);
-            showResult(detailsElement, detailsText, false);
-        }
-        
-        // INVESTMENT CALCULATORS
-        
-        // Advanced ROI Calculator
-        function calculateROIAdvanced() {
-            const investment = parseFloat(document.getElementById('roi-cost').value);
-            const finalValue = parseFloat(document.getElementById('roi-gain').value);
-            const resultElement = document.getElementById('roi-result');
-            const detailsElement = document.getElementById('roi-details');
-            const includeTime = document.getElementById('roi-time-toggle').checked;
-            
-            if (isNaN(investment) || isNaN(finalValue) || investment <= 0) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const totalReturn = finalValue - investment;
-            const roi = (totalReturn / investment) * 100;
-            
-            let resultText = formatPercentage(roi);
-            let detailsText = `Total Return: ${formatCurrency(totalReturn)}`;
-            
-            if (includeTime) {
-                const years = parseFloat(document.getElementById('roi-time').value);
-                if (!isNaN(years) && years > 0) {
-                    const annualizedROI = (Math.pow((finalValue / investment), (1 / years)) - 1) * 100;
-                    resultText = formatPercentage(annualizedROI) + ' (Annualized)';
-                    detailsText += ` | Total ROI: ${formatPercentage(roi)} over ${years} years`;
-                }
-            }
-            
-            showResult(resultElement, resultText);
-            showResult(detailsElement, detailsText, false);
-        }
-        
-        // Investment Percentage Calculator
-        function calculateInvestmentPercentage() {
-            const yourInvestment = parseFloat(document.getElementById('ip-your').value);
-            const totalInvestment = parseFloat(document.getElementById('ip-total').value);
-            const resultElement = document.getElementById('ip-result');
-            const subtitleElement = document.getElementById('ip-subtitle');
-            const resultCard = document.getElementById('ip-result-card');
-            
-            if (isNaN(yourInvestment) || isNaN(totalInvestment) || totalInvestment <= 0) {
-                showResultCard(resultCard, false);
-                return;
-            }
-            
-            const percentage = (yourInvestment / totalInvestment) * 100;
-            resultElement.textContent = formatPercentage(percentage);
-            
-            if (yourInvestment > totalInvestment) {
-                subtitleElement.textContent = 'Warning: Your investment exceeds the total investment';
-            } else {
-                subtitleElement.textContent = `Your share of the total investment`;
-            }
-            
-            showResultCard(resultCard, true);
-        }
-        
-        // Percentage to Amount Calculator
-        function calculatePercentageToAmount() {
-            const percentage = parseFloat(document.getElementById('pa-percentage').value);
-            const totalValue = parseFloat(document.getElementById('pa-total').value);
-            const resultElement = document.getElementById('pa-result');
-            const subtitleElement = document.getElementById('pa-subtitle');
-            const resultCard = document.getElementById('pa-result-card');
-            
-            if (isNaN(percentage) || isNaN(totalValue) || percentage < 0 || percentage > 100) {
-                showResultCard(resultCard, false);
-                return;
-            }
-            
-            const amount = totalValue * (percentage / 100);
-            resultElement.textContent = formatCurrency(amount);
-            subtitleElement.textContent = `Based on ${formatPercentage(percentage)} of ${formatCurrency(totalValue)}`;
-            
-            showResultCard(resultCard, true);
-        }
-        
-        // Investment Profit by Percentage Calculator
-        function calculateInvestmentProfit() {
-            const amount = parseFloat(document.getElementById('invp-amount').value);
-            const returnRate = parseFloat(document.getElementById('invp-return').value);
-            const time = parseFloat(document.getElementById('invp-time').value);
-            const isCompound = document.getElementById('invp-compound-toggle').checked;
-            
-            const profitElement = document.getElementById('invp-profit');
-            const finalElement = document.getElementById('invp-final');
-            const resultCard = document.getElementById('invp-result-card');
-            
-            if (isNaN(amount) || isNaN(returnRate) || isNaN(time) || amount <= 0 || returnRate < 0 || time <= 0) {
-                showResultCard(resultCard, false);
-                return;
-            }
-            
-            let finalValue, profit;
-            
-            if (isCompound) {
-                // Compound interest: A = P(1 + r/100)^t
-                finalValue = amount * Math.pow(1 + (returnRate / 100), time);
-                profit = finalValue - amount;
-            } else {
-                // Simple interest: A = P(1 + rt/100)
-                finalValue = amount * (1 + (returnRate / 100) * time);
-                profit = finalValue - amount;
-            }
-            
-            profitElement.textContent = formatCurrency(profit);
-            finalElement.textContent = formatCurrency(finalValue);
-            
-            showResultCard(resultCard, true);
-        }
-        
-        // NEW: Get Investment From % and Profit
-        function calculateInvestmentFromPercentProfit() {
-            const desiredProfit = parseFloat(document.getElementById('ifpp-profit').value);
-            const returnPercentage = parseFloat(document.getElementById('ifpp-percent').value);
-            const resultElement = document.getElementById('ifpp-result');
-            const subtitleElement = document.getElementById('ifpp-subtitle');
-            const resultCard = document.getElementById('ifpp-result-card');
-            
-            if (isNaN(desiredProfit) || isNaN(returnPercentage) || returnPercentage <= 0) {
-                showResultCard(resultCard, false);
-                return;
-            }
-            
-            const requiredInvestment = desiredProfit / (returnPercentage / 100);
-            resultElement.textContent = formatCurrency(requiredInvestment);
-            subtitleElement.textContent = `To earn ${formatCurrency(desiredProfit)} at ${formatPercentage(returnPercentage)} return`;
-            
-            showResultCard(resultCard, true);
-        }
-        
-        // NEW: Get % From Investment and Profit
-        function calculatePercentFromInvestmentProfit() {
-            const investment = parseFloat(document.getElementById('pfip-investment').value);
-            const profit = parseFloat(document.getElementById('pfip-profit').value);
-            const resultElement = document.getElementById('pfip-result');
-            const subtitleElement = document.getElementById('pfip-subtitle');
-            const resultCard = document.getElementById('pfip-result-card');
-            
-            if (isNaN(investment) || isNaN(profit) || investment <= 0) {
-                showResultCard(resultCard, false);
-                return;
-            }
-            
-            const returnPercentage = (profit / investment) * 100;
-            resultElement.textContent = formatPercentage(returnPercentage);
-            subtitleElement.textContent = `${formatCurrency(profit)} profit on ${formatCurrency(investment)} investment`;
-            
-            showResultCard(resultCard, true);
-        }
-        
-        // NEW: Get Profit From Investment and %
-        function calculateProfitFromInvestmentPercent() {
-            const investment = parseFloat(document.getElementById('pfip-investment2').value);
-            const returnPercentage = parseFloat(document.getElementById('pfip-percent').value);
-            const resultElement = document.getElementById('pfip-result2');
-            const subtitleElement = document.getElementById('pfip-subtitle2');
-            const resultCard = document.getElementById('pfip-result-card2');
-            
-            if (isNaN(investment) || isNaN(returnPercentage)) {
-                showResultCard(resultCard, false);
-                return;
-            }
-            
-            const profit = investment * (returnPercentage / 100);
-            const finalValue = investment + profit;
-            
-            resultElement.textContent = formatCurrency(profit);
-            subtitleElement.textContent = `Final value: ${formatCurrency(finalValue)}`;
-            
-            showResultCard(resultCard, true);
-        }
-        
-        // FINANCE CALCULATORS
-        
-        // Advanced Loan Calculator
-        function calculateLoanAdvanced() {
-            const principal = parseFloat(document.getElementById('loan-principal').value);
-            const years = parseInt(document.getElementById('loan-term').value);
-            const interestRate = parseFloat(document.getElementById('loan-rate').value);
-            const resultElement = document.getElementById('loan-result');
-            const detailsElement = document.getElementById('loan-details');
-            
-            if (isNaN(principal) || isNaN(years) || isNaN(interestRate) || 
-                principal <= 0 || years <= 0 || interestRate < 0) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const monthlyRate = interestRate / 100 / 12;
-            const numPayments = years * 12;
-            
-            // Monthly payment formula: P = L[c(1 + c)^n]/[(1 + c)^n - 1]
-            // where L = loan amount, c = monthly interest rate, n = number of payments
-            let monthlyPayment;
-            
-            if (interestRate === 0) {
-                monthlyPayment = principal / numPayments;
-            } else {
-                monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
-                                (Math.pow(1 + monthlyRate, numPayments) - 1);
-            }
-            
-            const totalPayment = monthlyPayment * numPayments;
-            const totalInterest = totalPayment - principal;
-            
-            showResult(resultElement, formatCurrency(monthlyPayment));
-            showResult(detailsElement, `Total paid: ${formatCurrency(totalPayment)} | Total interest: ${formatCurrency(totalInterest)}`, false);
-        }
-        
-        // Advanced Compound Interest Calculator
-        function calculateCompoundInterestAdvanced() {
-            const principal = parseFloat(document.getElementById('ci-principal').value);
-            const annualRate = parseFloat(document.getElementById('ci-rate').value);
-            const years = parseInt(document.getElementById('ci-time').value);
-            const compoundFrequency = parseInt(document.getElementById('ci-compound').value);
-            const resultElement = document.getElementById('ci-result');
-            const detailsElement = document.getElementById('ci-details');
-            
-            if (isNaN(principal) || isNaN(annualRate) || isNaN(years) || 
-                principal < 0 || annualRate < 0 || years <= 0) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const rate = annualRate / 100;
-            const futureValue = principal * Math.pow(1 + (rate / compoundFrequency), compoundFrequency * years);
-            const interestEarned = futureValue - principal;
-            
-            showResult(resultElement, formatCurrency(futureValue));
-            showResult(detailsElement, `Interest earned: ${formatCurrency(interestEarned)}`, false);
-        }
-        
-        // Advanced Sales Tax Calculator
-        function calculateSalesTaxAdvanced() {
-            const price = parseFloat(document.getElementById('st-price').value);
-            const taxRate = parseFloat(document.getElementById('st-rate').value);
-            const resultElement = document.getElementById('st-result');
-            const detailsElement = document.getElementById('st-details');
-            
-            if (isNaN(price) || isNaN(taxRate) || price < 0 || taxRate < 0) {
-                showResult(resultElement, '-');
-                showResult(detailsElement, '', false);
-                return;
-            }
-            
-            const taxAmount = price * (taxRate / 100);
-            const totalPrice = price + taxAmount;
-            
-            showResult(resultElement, formatCurrency(totalPrice));
-            showResult(detailsElement, `Tax amount: ${formatCurrency(taxAmount)}`, false);
-        }
     </script>
 </body>
+
 </html>
